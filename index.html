@@ -2,426 +2,112 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>台股投資報告 2026-06-01</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📊 台股投資分析報告</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --bg: #0a0e1a; --card: #111827; --card2: #1a2236;
-    --accent: #3b82f6; --accent2: #8b5cf6; --accent3: #10b981;
-    --gold: #f59e0b; --red: #ef4444; --text: #e2e8f0;
-    --text2: #94a3b8; --border: #1e293b;
-  }
-  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', 'PingFang TC', sans-serif; min-height: 100vh; }
-  header { background: linear-gradient(135deg, #0f172a, #1e1b4b); border-bottom: 1px solid var(--border); padding: 20px 30px; }
-  header h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
-  header .subtitle { color: var(--text2); font-size: 0.85rem; margin-top: 5px; }
-  .logic-banner { background: #1e293b; border-left: 4px solid var(--gold); padding: 12px 20px; margin: 16px 30px 0; border-radius: 6px; font-size: 0.82rem; color: #cbd5e1; line-height: 1.6; }
-  .logic-banner strong { color: var(--gold); }
-  nav { display: flex; gap: 4px; padding: 12px 30px; background: var(--card); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-  nav button { background: transparent; border: 1px solid var(--border); color: var(--text2); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 0.82rem; transition: all .2s; }
-  nav button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-  nav button:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
-  .tab-content { display: none; padding: 24px 30px; }
-  .tab-content.active { display: block; }
-  .stock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-  .stock-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; transition: transform .2s, border-color .2s; }
-  .stock-card:hover { transform: translateY(-2px); border-color: var(--accent); }
-  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-  .card-name { font-size: 1rem; font-weight: 700; }
-  .card-code { font-size: 0.75rem; color: var(--text2); margin-top: 2px; }
-  .card-industry { font-size: 0.72rem; background: var(--card2); padding: 3px 8px; border-radius: 12px; color: var(--text2); }
-  .card-price { display: flex; gap: 16px; margin-bottom: 12px; }
-  .price-item { flex: 1; }
-  .price-label { font-size: 0.7rem; color: var(--text2); }
-  .price-value { font-size: 1.1rem; font-weight: 700; }
-  .price-target { color: var(--accent3); }
-  .price-current { color: var(--text); }
-  .upside-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 700; }
-  .badge-high { background: rgba(16,185,129,.2); color: var(--accent3); }
-  .badge-mid { background: rgba(59,130,246,.2); color: var(--accent); }
-  .badge-low { background: rgba(245,158,11,.2); color: var(--gold); }
-  .card-scores { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  .score-pill { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; background: var(--card2); color: var(--text2); }
-  .score-pill span { font-weight: 700; color: var(--text); }
-  .card-catalyst { font-size: 0.78rem; color: var(--text2); line-height: 1.5; }
-  .card-catalyst strong { color: var(--gold); }
-  .overall-score { font-size: 1.5rem; font-weight: 800; }
-  .score-A { color: var(--accent3); }
-  .score-B { color: var(--accent); }
-  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
-  .filter-pill { background: var(--card); border: 1px solid var(--border); color: var(--text2); padding: 6px 14px; border-radius: 16px; cursor: pointer; font-size: 0.8rem; transition: all .2s; }
-  .filter-pill.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
-  select { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; }
-  .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 768px) { .chart-grid { grid-template-columns: 1fr; } }
-  .chart-box { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-  .chart-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 16px; color: var(--text2); }
-  .matrix-container { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-  .matrix-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 16px; color: var(--text2); }
-  .progress-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-  .progress-card { background: var(--card2); border-radius: 10px; padding: 14px; }
-  .progress-name { font-size: 0.85rem; font-weight: 700; margin-bottom: 10px; }
-  .progress-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-  .progress-label { font-size: 0.7rem; color: var(--text2); width: 50px; flex-shrink: 0; }
-  .progress-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-  .progress-bar { height: 100%; border-radius: 3px; }
-  .progress-val { font-size: 0.7rem; color: var(--text2); width: 28px; text-align: right; }
-  .compare-select-area { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
-  .compare-select-area label { font-size: 0.82rem; color: var(--text2); }
-  .portfolio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  @media (max-width: 900px) { .portfolio-grid { grid-template-columns: 1fr; } }
-  .portfolio-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-  .portfolio-type { font-size: 0.8rem; color: var(--text2); margin-bottom: 4px; }
-  .portfolio-name { font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
-  .portfolio-item { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 6px 0; border-bottom: 1px solid var(--border); }
-  .portfolio-item:last-child { border-bottom: none; }
-  .portfolio-stat { display: flex; gap: 16px; margin-top: 12px; }
-  .stat-box { flex: 1; background: var(--card2); border-radius: 8px; padding: 10px; text-align: center; }
-  .stat-label { font-size: 0.7rem; color: var(--text2); }
-  .stat-value { font-size: 1rem; font-weight: 700; }
-  .data-table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-  th { background: var(--card2); padding: 10px 12px; text-align: left; color: var(--text2); font-weight: 600; cursor: pointer; white-space: nowrap; border-bottom: 1px solid var(--border); }
-  th:hover { color: var(--accent); }
-  td { padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
-  tr:hover td { background: var(--card2); }
-  .industry-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
-  .industry-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-  .industry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  .industry-name { font-size: 1rem; font-weight: 700; }
-  .industry-badge { font-size: 0.72rem; padding: 3px 10px; border-radius: 12px; }
-  .industry-hot { background: rgba(239,68,68,.2); color: #ef4444; }
-  .industry-strong { background: rgba(16,185,129,.2); color: var(--accent3); }
-  .industry-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.6; margin-bottom: 12px; }
-  .industry-stocks { display: flex; gap: 6px; flex-wrap: wrap; }
-  .industry-stock-chip { background: var(--card2); font-size: 0.72rem; padding: 3px 10px; border-radius: 10px; color: var(--text); }
-  .disclaimer { background: var(--card2); border: 1px solid #374151; border-radius: 8px; padding: 14px; margin-top: 24px; font-size: 0.75rem; color: var(--text2); line-height: 1.6; }
-  canvas { max-width: 100%; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0e1a;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;padding:0}
+.hero{background:linear-gradient(135deg,#0d1424 0%,#1a1040 100%);border-bottom:1px solid #2e1065;padding:40px 24px 32px}
+.hero-inner{max-width:780px;margin:0 auto}
+.hero-flag{font-size:36px;margin-bottom:10px}
+h1{font-size:28px;font-weight:800;margin-bottom:6px;letter-spacing:-0.5px}
+h1 span{color:#a78bfa}
+.hero-sub{color:#64748b;font-size:13px;margin-bottom:20px}
+.hero-stats{display:flex;gap:20px;flex-wrap:wrap}
+.stat{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:10px;padding:10px 18px;font-size:12px}
+.stat-num{font-size:20px;font-weight:700;color:#a78bfa;display:block}
+.stat-label{color:#64748b;margin-top:1px}
+.main{max-width:780px;margin:0 auto;padding:32px 24px}
+.section-title{font-size:13px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+.report-item{background:#111827;border:1px solid #1e2d45;border-radius:14px;padding:18px 22px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;transition:all .15s;cursor:pointer}
+.report-item:hover{border-color:#7c3aed;transform:translateY(-1px);box-shadow:0 4px 20px rgba(139,92,246,.1)}
+.report-left{}
+.report-date{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.badge{font-size:10px;padding:2px 9px;border-radius:8px;font-weight:600}
+.badge-day{background:#2e1065;color:#a78bfa}
+.badge-new{background:rgba(52,211,153,.12);color:#34d399}
+.report-sub{font-size:12px;color:#64748b;margin-top:4px}
+.open-btn{background:#7c3aed;color:#fff;border:none;padding:9px 20px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block;transition:background .15s;flex-shrink:0}
+.open-btn:hover{background:#6d28d9}
+.loading{color:#64748b;text-align:center;padding:60px;font-size:13px}
+.empty{color:#64748b;text-align:center;padding:60px}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-text{font-size:14px;margin-bottom:6px}
+.empty-sub{font-size:12px;color:#475569}
+.footer{border-top:1px solid #1e2d45;padding:28px 24px;max-width:780px;margin:0 auto}
+.footer-text{font-size:11px;color:#475569;line-height:1.8;text-align:center}
+.links{display:flex;gap:16px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}
+.link-btn{font-size:12px;color:#7c3aed;text-decoration:none;padding:4px 0;border-bottom:1px solid transparent;transition:border-color .15s}
+.link-btn:hover{border-bottom-color:#7c3aed}
 </style>
 </head>
 <body>
-
-<header>
-  <h1>🇹🇼 台股投資報告 · 2026年6月1日</h1>
-  <div class="subtitle">資深投資分析師 AI 研究報告 · 12 檔精選個股</div>
-</header>
-
-<div class="logic-banner">
-  <strong>本週選股邏輯摘要：</strong>
-  聚焦三大主流產業：① <strong>AI伺服器供應鏈</strong>（鴻海、廣達、緯創、緯穎受益GB300出貨加速）② <strong>AI散熱/液冷</strong>（液冷滲透率2026年預估衝破76%，奇鋐、雙鴻、台達電為核心受益者）③ <strong>先進封裝/半導體</strong>（台積電CoWoS爆單延伸至2026年底，欣興、日月光直接受惠）。
-  選股依據：高盛/摩根士丹利/大和等外資升評、投信連續買超、法說會正面展望、AI資本支出擴張帶動的訂單能見度。
-</div>
-
-<nav>
-  <button class="active" onclick="showTab('overview')">📊 總覽</button>
-  <button onclick="showTab('charts')">📈 圖表</button>
-  <button onclick="showTab('matrix')">🎯 矩陣</button>
-  <button onclick="showTab('compare')">⚖️ 比較</button>
-  <button onclick="showTab('portfolio')">💼 組合建議</button>
-  <button onclick="showTab('table')">📋 數據表</button>
-  <button onclick="showTab('industry')">🏭 產業</button>
-</nav>
-
-<div id="tab-overview" class="tab-content active">
-  <div class="filter-bar">
-    <span style="font-size:0.82rem;color:var(--text2)">篩選：</span>
-    <div class="filter-pill active" onclick="filterStocks('all', this)">全部</div>
-    <div class="filter-pill" onclick="filterStocks('AI伺服器', this)">AI伺服器</div>
-    <div class="filter-pill" onclick="filterStocks('散熱', this)">散熱</div>
-    <div class="filter-pill" onclick="filterStocks('半導體', this)">半導體</div>
-    <div class="filter-pill" onclick="filterStocks('先進封裝', this)">先進封裝</div>
-    <span style="margin-left:auto;font-size:0.82rem;color:var(--text2)">排序：</span>
-    <select onchange="sortStocks(this.value)">
-      <option value="score">綜合評分</option>
-      <option value="upside">漲幅潛力</option>
-      <option value="momentum">股價動能</option>
-    </select>
-  </div>
-  <div class="stock-grid" id="stockGrid"></div>
-  <div class="disclaimer">⚠️ 免責聲明：本報告由 AI 根據公開資訊整理，僅供參考，不構成投資建議。股市投資涉及風險，投資人應自行評估並承擔損益。過去表現不代表未來獲利保證。</div>
-</div>
-
-<div id="tab-charts" class="tab-content">
-  <div class="chart-grid">
-    <div class="chart-box"><div class="chart-title">📊 漲幅潛力排行（%）</div><canvas id="chartUpside" height="280"></canvas></div>
-    <div class="chart-box"><div class="chart-title">📈 營收成長預估 YoY（%）</div><canvas id="chartRevenue" height="280"></canvas></div>
-    <div class="chart-box"><div class="chart-title">🍕 產業分佈</div><canvas id="chartIndustry" height="260"></canvas></div>
-    <div class="chart-box"><div class="chart-title">🏆 綜合評分排行</div><canvas id="chartScore" height="280"></canvas></div>
-  </div>
-</div>
-
-<div id="tab-matrix" class="tab-content">
-  <div class="matrix-container"><div class="matrix-title">🎯 風險×回報 散佈圖</div><canvas id="chartScatter" height="300"></canvas></div>
-  <div class="matrix-title" style="margin-bottom:12px">五維評分明細</div>
-  <div class="progress-grid" id="progressGrid"></div>
-</div>
-
-<div id="tab-compare" class="tab-content">
-  <div class="compare-select-area">
-    <label>選擇個股 (2-4檔)：</label>
-    <select id="cmp1" onchange="updateCompare()"></select>
-    <select id="cmp2" onchange="updateCompare()"></select>
-    <select id="cmp3" onchange="updateCompare()"><option value="">-- 可選 --</option></select>
-    <select id="cmp4" onchange="updateCompare()"><option value="">-- 可選 --</option></select>
-  </div>
-  <div class="chart-grid" style="grid-template-columns:1fr 1fr;">
-    <div class="chart-box"><div class="chart-title">⬡ 雷達圖比較</div><canvas id="chartRadar" height="300"></canvas></div>
-    <div class="chart-box"><div class="chart-title">📊 指標對比</div><div id="compareTable" style="font-size:0.82rem;"></div></div>
-  </div>
-</div>
-
-<div id="tab-portfolio" class="tab-content">
-  <div class="portfolio-grid">
-    <div class="portfolio-card" style="border-color:#3b82f6">
-      <div class="portfolio-type">保守穩健型</div>
-      <div class="portfolio-name">🛡️ 藍籌防禦組合</div>
-      <canvas id="pieCons" height="180"></canvas>
-      <div id="consList"></div>
-      <div class="portfolio-stat" id="consStat"></div>
-    </div>
-    <div class="portfolio-card" style="border-color:#8b5cf6">
-      <div class="portfolio-type">平衡成長型</div>
-      <div class="portfolio-name">⚖️ 均衡配置組合</div>
-      <canvas id="pieBalance" height="180"></canvas>
-      <div id="balanceList"></div>
-      <div class="portfolio-stat" id="balanceStat"></div>
-    </div>
-    <div class="portfolio-card" style="border-color:#10b981">
-      <div class="portfolio-type">積極攻擊型</div>
-      <div class="portfolio-name">🚀 高成長衝刺組合</div>
-      <canvas id="pieAggr" height="180"></canvas>
-      <div id="aggrList"></div>
-      <div class="portfolio-stat" id="aggrStat"></div>
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-flag">🇹🇼</div>
+    <h1>台股 <span>投資分析</span> 報告</h1>
+    <div class="hero-sub">每週三、週五下午 5:00 自動更新 · AI 驅動選股 · 動態分析師評級</div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num" id="report-count">—</span><div class="stat-label">份報告</div></div>
+      <div class="stat"><span class="stat-num" id="latest-date">—</span><div class="stat-label">最新更新</div></div>
+      <div class="stat"><span class="stat-num">10–12</span><div class="stat-label">每報告精選個股</div></div>
     </div>
   </div>
 </div>
-
-<div id="tab-table" class="tab-content">
-  <div class="data-table-wrap">
-    <table id="dataTable">
-      <thead><tr>
-        <th onclick="sortTable(0)">代號</th><th onclick="sortTable(1)">名稱</th><th onclick="sortTable(2)">產業</th>
-        <th onclick="sortTable(3)">現價</th><th onclick="sortTable(4)">目標價</th><th onclick="sortTable(5)">漲幅潛力%</th>
-        <th onclick="sortTable(6)">52週低</th><th onclick="sortTable(7)">52週高</th><th onclick="sortTable(8)">EPS(E)</th>
-        <th onclick="sortTable(9)">綜合評分</th>
-      </tr></thead>
-      <tbody id="tableBody"></tbody>
-    </table>
+<div class="main">
+  <div class="section-title">📋 報告列表</div>
+  <div id="list"><div class="loading">⏳ 載入報告清單中...</div></div>
+</div>
+<div class="footer">
+  <div class="links">
+    <a class="link-btn" href="https://github.com/yuming0827/taiwan-stock-report" target="_blank">GitHub Repo</a>
+    <a class="link-btn" href="https://yuming0827.github.io/us-stock-reports/" target="_blank">🇺🇸 美股報告</a>
+  </div>
+  <div class="footer-text">
+    ⚠️ 免責聲明：本頁所有報告僅供參考，不構成任何投資建議。<br>
+    股市投資具有風險，過去績效不代表未來表現，請自行判斷並諮詢專業財務顧問。<br>
+    資料來源：Yahoo Finance、MarketBeat、台灣法人公開報告、分析師預測
   </div>
 </div>
-
-<div id="tab-industry" class="tab-content">
-  <div class="industry-grid" id="industryGrid"></div>
-</div>
-
 <script>
-const STOCKS = [
-  { code:'2330', name:'台積電', industry:'半導體', price:1050, target:1380, low52:720, high52:1115, eps:103.3, rev:35, news:82, sector:98, demand:95, momentum:78, revenue:90, catalyst:'Q1 EPS 22.08創新高、毛利率66.2%破紀錄；外資目標價上修至2875元；CoWoS產能爆單至2026年底；台積電上修全年營收指引充滿信心超過30%', risk:25, reward:90 },
-  { code:'2454', name:'聯發科', industry:'半導體', price:1350, target:1700, low52:900, high52:1480, eps:63.3, rev:42, news:80, sector:88, demand:85, momentum:75, revenue:85, catalyst:'外資上修2026-2028 EPS至63.3/132.2/406元；AI手機晶片需求強勁；ASIC佈局獲機構青睞', risk:30, reward:82 },
-  { code:'2317', name:'鴻海', industry:'AI伺服器', price:235, target:400, low52:140, high52:280, eps:15.2, rev:38, news:85, sector:85, demand:88, momentum:72, revenue:80, catalyst:'高盛目標價400元維持買進；GB300機櫃出貨量持續雙位數季增；AI伺服器佔營收比重快速提升；機器人概念加持', risk:35, reward:85 },
-  { code:'2382', name:'廣達', industry:'AI伺服器', price:380, target:460, low52:200, high52:405, eps:23.5, rev:45, news:82, sector:84, demand:87, momentum:70, revenue:82, catalyst:'林百里：AI市場登梯向上；今年AI伺服器需求非常強勁；股東會釋放正面展望；法人看好EPS 23.5元', risk:32, reward:80 },
-  { code:'3231', name:'緯創', industry:'AI伺服器', price:155, target:200, low52:80, high52:172, eps:8.5, rev:55, news:78, sector:80, demand:82, momentum:74, revenue:78, catalyst:'1月出貨年增139%創紀錄；GPU及ASIC伺服器訂單持續；高盛維持買進；AI伺服器佔比快速提升', risk:40, reward:76 },
-  { code:'6669', name:'緯穎', industry:'AI伺服器', price:2800, target:3500, low52:1500, high52:3050, eps:85, rev:50, news:76, sector:82, demand:85, momentum:68, revenue:80, catalyst:'1月出貨年增101%；CSP雲端客戶訂單滿載；高盛列為AI伺服器核心受益股；液冷解決方案出貨加速', risk:38, reward:78 },
-  { code:'3017', name:'奇鋐', industry:'散熱', price:1450, target:2780, low52:700, high52:1850, eps:93.1, rev:85, news:88, sector:90, demand:92, momentum:82, revenue:90, catalyst:'投顧目標價2780元；2026 EPS預估93元、2027年128元；液冷滲透率76%；大和喊散熱大贏家；CSP訂單滿載至年底', risk:42, reward:92 },
-  { code:'3217', name:'雙鴻', industry:'散熱', price:580, target:820, low52:280, high52:720, eps:28, rev:70, news:82, sector:85, demand:88, momentum:78, revenue:82, catalyst:'水冷板產能滿載；GB300伺服器液冷佔比提升；外資調升目標價；2026液冷滲透率76%受益直接', risk:40, reward:85 },
-  { code:'2308', name:'台達電', industry:'散熱', price:450, target:600, low52:280, high52:485, eps:41.5, rev:40, news:80, sector:84, demand:82, momentum:72, revenue:80, catalyst:'外資上修EPS至41.5-98.5元；電源模組需求爆發；AI伺服器單機功耗提升帶動高階電源訂單；散熱與電源雙引擎', risk:28, reward:78 },
-  { code:'3037', name:'欣興', industry:'先進封裝', price:165, target:220, low52:85, high52:195, eps:12, rev:45, news:78, sector:82, demand:80, momentum:76, revenue:78, catalyst:'ABF載板全球龍頭；投信連續買超33784張；CoWoS供應鏈核心受益者；台積電CoWoS需求爆單至2026年底', risk:38, reward:74 },
-  { code:'3711', name:'日月光投控', industry:'先進封裝', price:165, target:263, low52:100, high52:190, eps:10.5, rev:38, news:80, sector:85, demand:82, momentum:74, revenue:76, catalyst:'匯豐目標價263元(+47.7%)；2026年LEAP先進封裝營收目標32億美元；70億美元資本支出計畫；外資評為CoWoS最大贏家之一', risk:32, reward:80 },
-  { code:'3081', name:'聯亞', industry:'光通訊', price:2200, target:2900, low52:1000, high52:2450, eps:55, rev:60, news:82, sector:80, demand:78, momentum:80, revenue:80, catalyst:'外資一舉調升目標價；光通訊AI資料中心需求大增；高盛名單入列；近期漲停強勢；AI伺服器高速傳輸需求爆發', risk:45, reward:82 }
-];
-
-STOCKS.forEach(s => {
-  s.overall = Math.round((s.news + s.sector + s.demand + s.momentum + s.revenue) / 5);
-  s.upside = Math.round((s.target - s.price) / s.price * 100);
-});
-
-function getUpsideBadge(u) {
-  if (u >= 60) return `<span class="upside-badge badge-high">+${u}%</span>`;
-  if (u >= 30) return `<span class="upside-badge badge-mid">+${u}%</span>`;
-  return `<span class="upside-badge badge-low">+${u}%</span>`;
-}
-function getScoreClass(s) { return s >= 82 ? 'score-A' : 'score-B'; }
-
-let currentFilter = 'all', currentSort = 'score';
-
-function renderCards(data) {
-  const grid = document.getElementById('stockGrid');
-  grid.innerHTML = '';
-  data.forEach(s => {
-    const card = document.createElement('div');
-    card.className = 'stock-card';
-    card.innerHTML = `
-      <div class="card-header">
-        <div><div class="card-name">${s.name}</div><div class="card-code">${s.code}</div></div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-          <div class="card-industry">${s.industry}</div>
-          <div class="overall-score ${getScoreClass(s.overall)}">${s.overall}</div>
+(async () => {
+  const REPO = "yuming0827/taiwan-stock-report";
+  const BASE = "https://yuming0827.github.io/taiwan-stock-report";
+  const container = document.getElementById("list");
+  try {
+    const res = await fetch("https://api.github.com/repos/" + REPO + "/contents/");
+    const files = await res.json();
+    const reports = files
+      .filter(f => f.name.startsWith("投資報告_") && f.name.endsWith(".html") && f.size > 10000)
+      .sort((a, b) => b.name.localeCompare(a.name));
+    document.getElementById("report-count").textContent = reports.length;
+    if (!reports.length) {
+      container.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">尚無報告</div><div class="empty-sub">下次排程（週三/週五 17:00）執行後即可看到</div></div>';
+      return;
+    }
+    document.getElementById("latest-date").textContent = reports[0].name.replace("投資報告_","").replace(".html","");
+    container.innerHTML = reports.map((f, idx) => {
+      const date = f.name.replace("投資報告_","").replace(".html","");
+      const [y, m, d] = date.split("-");
+      const weekday = ["日","一","二","三","四","五","六"][new Date(date).getDay()];
+      const isNew = idx === 0;
+      const kb = (f.size / 1024).toFixed(0);
+      return `<div class="report-item" onclick="window.open('${BASE}/${f.name}','_blank')">
+        <div class="report-left">
+          <div class="report-date">
+            📄 ${y} 年 ${m} 月 ${d} 日
+            <span class="badge badge-day">週${weekday}</span>
+            ${isNew ? '<span class="badge badge-new">最新</span>' : ''}
+          </div>
+          <div class="report-sub">台股精選 · 10–12 檔 · 7 個互動分頁 · ${kb}KB</div>
         </div>
-      </div>
-      <div class="card-price">
-        <div class="price-item"><div class="price-label">現價</div><div class="price-value price-current">NT$${s.price.toLocaleString()}</div></div>
-        <div class="price-item"><div class="price-label">目標價</div><div class="price-value price-target">NT$${s.target.toLocaleString()}</div></div>
-        <div class="price-item"><div class="price-label">上漲空間</div><div style="margin-top:4px">${getUpsideBadge(s.upside)}</div></div>
-      </div>
-      <div class="card-scores">
-        <div class="score-pill">消息 <span>${s.news}</span></div>
-        <div class="score-pill">產業 <span>${s.sector}</span></div>
-        <div class="score-pill">需求 <span>${s.demand}</span></div>
-        <div class="score-pill">動能 <span>${s.momentum}</span></div>
-        <div class="score-pill">營收 <span>${s.revenue}</span></div>
-      </div>
-      <div class="card-catalyst"><strong>📌 催化劑：</strong>${s.catalyst}</div>`;
-    grid.appendChild(card);
-  });
-}
-
-function filterStocks(industry, el) {
-  currentFilter = industry;
-  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  let data = industry === 'all' ? [...STOCKS] : STOCKS.filter(s => s.industry === industry);
-  renderCards(sortData(data, currentSort));
-}
-function sortStocks(val) {
-  currentSort = val;
-  let data = currentFilter === 'all' ? [...STOCKS] : STOCKS.filter(s => s.industry === currentFilter);
-  renderCards(sortData(data, val));
-}
-function sortData(data, val) {
-  if (val === 'score') return data.sort((a,b) => b.overall - a.overall);
-  if (val === 'upside') return data.sort((a,b) => b.upside - a.upside);
-  if (val === 'momentum') return data.sort((a,b) => b.momentum - a.momentum);
-  return data;
-}
-renderCards(sortData([...STOCKS], 'score'));
-
-function renderProgress() {
-  const grid = document.getElementById('progressGrid');
-  const dims = [{key:'news',label:'消息面',color:'#f59e0b'},{key:'sector',label:'產業面',color:'#8b5cf6'},{key:'demand',label:'需求面',color:'#3b82f6'},{key:'momentum',label:'動能',color:'#10b981'},{key:'revenue',label:'營收',color:'#ef4444'}];
-  STOCKS.forEach(s => {
-    const card = document.createElement('div');
-    card.className = 'progress-card';
-    let rows = dims.map(d => `<div class="progress-row"><div class="progress-label">${d.label}</div><div class="progress-bar-wrap"><div class="progress-bar" style="width:${s[d.key]}%;background:${d.color}"></div></div><div class="progress-val">${s[d.key]}</div></div>`).join('');
-    card.innerHTML = `<div class="progress-name">${s.name} <span style="color:var(--text2);font-weight:400;font-size:0.75rem">${s.code}</span></div>${rows}`;
-    grid.appendChild(card);
-  });
-}
-renderProgress();
-
-function renderTable() {
-  const body = document.getElementById('tableBody');
-  STOCKS.forEach(s => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td style="font-weight:700;color:var(--accent)">${s.code}</td><td>${s.name}</td><td><span class="card-industry">${s.industry}</span></td><td>NT$${s.price.toLocaleString()}</td><td style="color:var(--accent3)">NT$${s.target.toLocaleString()}</td><td>${getUpsideBadge(s.upside)}</td><td style="color:var(--text2)">NT$${s.low52.toLocaleString()}</td><td style="color:var(--text2)">NT$${s.high52.toLocaleString()}</td><td style="color:var(--gold)">${s.eps}</td><td class="${getScoreClass(s.overall)}" style="font-weight:700">${s.overall}</td>`;
-    body.appendChild(tr);
-  });
-}
-renderTable();
-
-const INDUSTRIES = [
-  {name:'AI伺服器供應鏈', badge:'industry-hot', badgeText:'本週主軸', desc:'GB300機櫃出貨量維持雙位數季增，ASIC伺服器滲透率持續拉升。2026年Q2美系CSP資本支出達800億美元，台灣ODM廠直接受惠。', stocks:['鴻海 2317','廣達 2382','緯創 3231','緯穎 6669'], why:'CSP資本支出連年上修、GB300與Vera Rubin平台2026年下半出貨'},
-  {name:'AI散熱/液冷', badge:'industry-hot', badgeText:'爆發期', desc:'2026年AI伺服器液冷滲透率預估突破76%，奇鋐水冷板產能滿載至年底，雙鴻大客戶訂單確定，台達電電源+散熱雙引擎。', stocks:['奇鋐 3017','雙鴻 3217','台達電 2308'], why:'液冷滲透率飆升76%、水冷板供不應求、AI晶片功耗持續攀升'},
-  {name:'先進封裝', badge:'industry-strong', badgeText:'長線受益', desc:'台積電CoWoS訂單爆到2026年底，欣興ABF載板為核心材料供應商；日月光LEAP先進封裝營收目標上修至32億美元。', stocks:['欣興 3037','日月光投控 3711'], why:'CoWoS產能擴張、HBM封裝需求爆發、台積電資本支出550億美元'},
-  {name:'半導體/晶片設計', badge:'industry-strong', badgeText:'基礎主幹', desc:'台積電Q1 EPS 22.08、毛利率66.2%均創歷史新高，全年指引上修。聯發科AI手機晶片及ASIC業務獲外資上修2026-2028 EPS。', stocks:['台積電 2330','聯發科 2454'], why:'AI算力需求推動先進製程滿產、CoWoS獨家優勢、ASIC市場份額擴張'},
-  {name:'光通訊', badge:'industry-strong', badgeText:'隱形冠軍', desc:'AI資料中心高速傳輸需求帶動光模組與光元件需求暴增。聯亞在800G/1.6T光元件領域佔有重要地位，外資近期大幅調升目標價。', stocks:['聯亞 3081'], why:'資料中心互連頻寬倍增、800G以上光模組需求爆發'}
-];
-
-function renderIndustry() {
-  const grid = document.getElementById('industryGrid');
-  INDUSTRIES.forEach(ind => {
-    const card = document.createElement('div');
-    card.className = 'industry-card';
-    card.innerHTML = `<div class="industry-header"><div class="industry-name">${ind.name}</div><div class="industry-badge ${ind.badge}">${ind.badgeText}</div></div><div class="industry-desc">${ind.desc}</div><div style="font-size:0.78rem;color:var(--text2);margin-bottom:8px">📌 本週聚焦原因：${ind.why}</div><div class="industry-stocks">${ind.stocks.map(s => `<div class="industry-stock-chip">${s}</div>`).join('')}</div>`;
-    grid.appendChild(card);
-  });
-}
-renderIndustry();
-
-function showTab(id) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  event.target.classList.add('active');
-  if (id === 'charts') initCharts();
-  if (id === 'compare') initCompare();
-  if (id === 'portfolio') initPortfolio();
-  if (id === 'matrix') initScatter();
-}
-
-let chartsInit = false;
-function initCharts() {
-  if (chartsInit) return; chartsInit = true;
-  const sorted = [...STOCKS].sort((a,b) => b.upside - a.upside);
-  const colors = ['#10b981','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#ec4899','#84cc16','#f97316','#a78bfa','#34d399','#60a5fa'];
-  new Chart(document.getElementById('chartUpside'), { type:'bar', data:{ labels:sorted.map(s=>s.name), datasets:[{label:'漲幅潛力(%)', data:sorted.map(s=>s.upside), backgroundColor:colors, borderRadius:6}] }, options:{indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#94a3b8'},grid:{color:'#1e293b'}},y:{ticks:{color:'#e2e8f0',font:{size:11}},grid:{color:'#1e293b'}}}} });
-  const revSorted = [...STOCKS].sort((a,b) => b.rev - a.rev);
-  new Chart(document.getElementById('chartRevenue'), { type:'bar', data:{ labels:revSorted.map(s=>s.name), datasets:[{label:'YoY(%)', data:revSorted.map(s=>s.rev), backgroundColor:'#3b82f6', borderRadius:6}] }, options:{indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{ticks:{color:'#94a3b8'},grid:{color:'#1e293b'}},y:{ticks:{color:'#e2e8f0',font:{size:11}},grid:{color:'#1e293b'}}}} });
-  const indCount = {}; STOCKS.forEach(s => { indCount[s.industry] = (indCount[s.industry]||0)+1; });
-  new Chart(document.getElementById('chartIndustry'), { type:'doughnut', data:{ labels:Object.keys(indCount), datasets:[{data:Object.values(indCount), backgroundColor:['#3b82f6','#10b981','#8b5cf6','#f59e0b','#ef4444'], borderWidth:2, borderColor:'#111827'}] }, options:{plugins:{legend:{labels:{color:'#e2e8f0',font:{size:11}}}}} });
-  const scoreSorted = [...STOCKS].sort((a,b) => b.overall - a.overall);
-  new Chart(document.getElementById('chartScore'), { type:'bar', data:{ labels:scoreSorted.map(s=>s.name), datasets:[{label:'綜合評分', data:scoreSorted.map(s=>s.overall), backgroundColor:scoreSorted.map(s=>s.overall>=85?'#10b981':'#3b82f6'), borderRadius:6}] }, options:{indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{min:60,ticks:{color:'#94a3b8'},grid:{color:'#1e293b'}},y:{ticks:{color:'#e2e8f0',font:{size:11}},grid:{color:'#1e293b'}}}} });
-}
-
-let scatterInit = false;
-function initScatter() {
-  if (scatterInit) return; scatterInit = true;
-  new Chart(document.getElementById('chartScatter'), { type:'bubble', data:{datasets: STOCKS.map((s,i)=>({ label:s.name, data:[{x:s.risk,y:s.reward,r:10}], backgroundColor: ['#10b981','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#ec4899','#84cc16','#f97316','#a78bfa','#34d399','#60a5fa'][i]+'cc' }))}, options:{ plugins:{legend:{labels:{color:'#94a3b8',font:{size:10}}}}, scales:{ x:{title:{display:true,text:'風險→',color:'#94a3b8'},ticks:{color:'#94a3b8'},grid:{color:'#1e293b'}}, y:{title:{display:true,text:'↑回報',color:'#94a3b8'},ticks:{color:'#94a3b8'},grid:{color:'#1e293b'}} } } });
-}
-
-let compareInit = false, compareChart = null;
-function initCompare() {
-  if (compareInit) return; compareInit = true;
-  ['cmp1','cmp2','cmp3','cmp4'].forEach((id,i) => {
-    const sel = document.getElementById(id);
-    STOCKS.forEach((s,j) => { const opt = document.createElement('option'); opt.value = j; opt.text = `${s.name} (${s.code})`; sel.appendChild(opt); });
-    if (i===0) sel.value=0; if (i===1) sel.value=6;
-  });
-  updateCompare();
-}
-function updateCompare() {
-  const idxs = ['cmp1','cmp2','cmp3','cmp4'].map(id=>document.getElementById(id).value).filter(v=>v!=='').map(Number);
-  const selected = idxs.map(i=>STOCKS[i]);
-  const colors = ['#3b82f6','#10b981','#8b5cf6','#f59e0b'];
-  const dims = ['消息面','產業面','需求面','動能','營收成長'];
-  const keys = ['news','sector','demand','momentum','revenue'];
-  if (compareChart) compareChart.destroy();
-  compareChart = new Chart(document.getElementById('chartRadar'), { type:'radar', data:{ labels:dims, datasets: selected.map((s,i)=>({ label:s.name, data:keys.map(k=>s[k]), borderColor:colors[i], backgroundColor:colors[i]+'33', pointBackgroundColor:colors[i] })) }, options:{plugins:{legend:{labels:{color:'#e2e8f0'}}},scales:{r:{ticks:{color:'#94a3b8',backdropColor:'transparent'},grid:{color:'#1e293b'},angleLines:{color:'#1e293b'},pointLabels:{color:'#94a3b8'},min:60}}} });
-  const wrap = document.getElementById('compareTable');
-  const metrics = [{label:'現價',fn:s=>`NT$${s.price.toLocaleString()}`},{label:'目標價',fn:s=>`NT$${s.target.toLocaleString()}`},{label:'上漲空間',fn:s=>`+${s.upside}%`},{label:'EPS(E)',fn:s=>s.eps},{label:'綜合評分',fn:s=>s.overall},{label:'產業',fn:s=>s.industry}];
-  let html = `<table style="width:100%;border-collapse:collapse;font-size:0.78rem"><thead><tr><th style="padding:8px;border-bottom:1px solid #1e293b;color:#94a3b8">指標</th>${selected.map(s=>`<th style="padding:8px;border-bottom:1px solid #1e293b;color:#e2e8f0">${s.name}</th>`).join('')}</tr></thead><tbody>`;
-  metrics.forEach(m=>{ html+=`<tr><td style="padding:8px;color:#94a3b8;border-bottom:1px solid #1e293b">${m.label}</td>${selected.map(s=>`<td style="padding:8px;border-bottom:1px solid #1e293b">${m.fn(s)}</td>`).join('')}</tr>`; });
-  html+='</tbody></table>'; wrap.innerHTML = html;
-}
-
-let portfolioInit = false;
-function initPortfolio() {
-  if (portfolioInit) return; portfolioInit = true;
-  const portfolios = [
-    { canvasId:'pieCons', listId:'consList', statId:'consStat', items:[{idx:0,wt:30},{idx:1,wt:25},{idx:8,wt:25},{idx:9,wt:20}] },
-    { canvasId:'pieBalance', listId:'balanceList', statId:'balanceStat', items:[{idx:0,wt:20},{idx:2,wt:20},{idx:6,wt:20},{idx:10,wt:20},{idx:11,wt:20}] },
-    { canvasId:'pieAggr', listId:'aggrList', statId:'aggrStat', items:[{idx:6,wt:25},{idx:7,wt:20},{idx:3,wt:20},{idx:4,wt:20},{idx:11,wt:15}] }
-  ];
-  const pieColors = ['#3b82f6','#10b981','#8b5cf6','#f59e0b','#ef4444'];
-  portfolios.forEach(p => {
-    const stocks = p.items.map(i=>({...STOCKS[i.idx], weight:i.wt}));
-    new Chart(document.getElementById(p.canvasId), { type:'doughnut', data:{labels:stocks.map(s=>s.name),datasets:[{data:stocks.map(s=>s.weight),backgroundColor:pieColors.slice(0,stocks.length),borderWidth:2,borderColor:'#111827'}]}, options:{plugins:{legend:{labels:{color:'#e2e8f0',font:{size:10}}}}} });
-    document.getElementById(p.listId).innerHTML = stocks.map(s=>`<div class="portfolio-item"><span>${s.name}</span><span>${s.weight}%</span></div>`).join('');
-    const avgUpside = Math.round(stocks.reduce((a,s)=>a+s.upside*s.weight,0)/100);
-    const avgScore = Math.round(stocks.reduce((a,s)=>a+s.overall*s.weight,0)/100);
-    document.getElementById(p.statId).innerHTML = `<div class="stat-box"><div class="stat-label">平均上漲空間</div><div class="stat-value" style="color:var(--accent3)">+${avgUpside}%</div></div><div class="stat-box"><div class="stat-label">加權評分</div><div class="stat-value" style="color:var(--accent)">${avgScore}</div></div>`;
-  });
-}
-
-let sortDir = {};
-function sortTable(col) {
-  const tbody = document.getElementById('dataTable').querySelector('tbody');
-  const rows = Array.from(tbody.rows);
-  sortDir[col] = !sortDir[col];
-  rows.sort((a,b) => { let av = a.cells[col].textContent.replace(/[^0-9.-]/g,''); let bv = b.cells[col].textContent.replace(/[^0-9.-]/g,''); av = isNaN(av) ? a.cells[col].textContent : parseFloat(av); bv = isNaN(bv) ? b.cells[col].textContent : parseFloat(bv); return sortDir[col] ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1); });
-  rows.forEach(r => tbody.appendChild(r));
-}
+        <a class="open-btn" href="${BASE}/${f.name}" target="_blank" onclick="event.stopPropagation()">開啟報告 →</a>
+      </div>`;
+    }).join("");
+  } catch(e) {
+    container.innerHTML = '<div class="loading">載入失敗，請重新整理頁面</div>';
+  }
+})();
 </script>
 </body>
 </html>
